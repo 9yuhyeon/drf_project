@@ -8,6 +8,7 @@ class Article(models.Model):
     image = models.ImageField(blank=True, upload_to='%Y/%m/%d/')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    likes = models.ManyToManyField(User, related_name='like_articles')
     
     def __str__(self):
         return str(self.title)
