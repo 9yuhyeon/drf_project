@@ -2,10 +2,12 @@ import re
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework import status, permissions
+from django.db.models import Q
 from rest_framework.response import Response
 from .models import Article, Comment
 from .serializers import ArticleSerializer, ArticleListSerializer, ArticleCreateSerializer, CommentSerializer, CommentCreateSerializer
 from articles import serializers
+
 
 # Create your views here.
 class ArticleView(APIView):
@@ -21,6 +23,18 @@ class ArticleView(APIView):
             return Response(serializers.data, status=status.HTTP_200_OK)
         else:
             return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FeedView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        q = Q()
+        for user in request.user.follow.all():
+            q.add(Q(user=user),q.OR)
+        feeds = Article.objects.filter(q)
+        serializers = ArticleListSerializer(feeds, many=True)
+        return Response(serializers.data)
 
 
 class ArticleDetailView(APIView):

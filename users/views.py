@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
 from users.models import User
-from .serializers import UserSerializer
-from .serializers import CustomTokenObtainPairSerializer
+from .serializers import UserSerializer, UserProfileSerializer, CustomTokenObtainPairSerializer
+
 
 
 class CutomTokenObtainPairView(TokenObtainPairView):
@@ -20,6 +20,13 @@ class UserView(APIView):
             serializer.save()
             return Response({"msg":"가입 완료!!"}, status=status.HTTP_201_CREATED)
         return Response({"msg":f"${serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProfileView(APIView):
+    def get(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        serializers = UserProfileSerializer(user)
+        return Response(serializers.data, status=status.HTTP_200_OK)
 
 
 class FollowView(APIView):

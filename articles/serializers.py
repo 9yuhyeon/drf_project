@@ -2,9 +2,29 @@ from rest_framework import serializers
 from .models import Article, Comment
 
 
-class ArticleSerializer(serializers.ModelSerializer):
+class CommentCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Comment
+        fields = ('content',)
+
+
+class CommentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
 
+    def get_user(self, obj):
+        return obj.user.email
+        
+    class Meta:
+        model = Comment
+        exclude = ('article',)
+
+
+class ArticleSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+    comments = CommentSerializer(many=True)
+    likes = serializers.StringRelatedField(many=True)
+    
     def get_user(self, obj):
         return obj.user.email
         
@@ -21,28 +41,18 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
 
 class ArticleListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
+    likes = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
+
+    def get_comments(self, obj):
+        return obj.comments.count()
+
+    def get_likes(self, obj):
+        return obj.likes.count()
 
     def get_user(self, obj):
         return obj.user.email
 
     class Meta:
         model = Article
-        fields = ('id','title','image','created_at','user')
-
-
-class CommentSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
-
-    def get_user(self, obj):
-        return obj.user.email
-        
-    class Meta:
-        model = Comment
-        fields = '__all__'
-
-
-class CommentCreateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Comment
-        fields = ('content',)
+        fields = ('id','title','image','created_at','user','likes','comments')
